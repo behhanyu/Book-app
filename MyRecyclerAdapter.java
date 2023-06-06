@@ -9,13 +9,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fit2081.smstokenizer_w5.provider.Book;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.ViewHolder>{
 
-    ArrayList<Book> data = new ArrayList<Book>();
+    List<Book> data = new ArrayList<>();
 
-    public void setData(ArrayList<Book> data) {
+    public void MyRecyclerAdapter(){
+    }
+    public void setData(List<Book> data) {
         this.data = data;
     }
 
@@ -36,7 +41,6 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
         holder.authorTv.setText(data.get(position).getAuthor());
         holder.descriptionTv.setText("Description: " + data.get(position).getDescription());
         holder.priceTv.setText("RM" + data.get(position).getPrice());
-        holder.positionTv.setText("No." + String.valueOf(position + 1));
 
         Log.d("week6App","onBindViewHolder");
 
@@ -48,7 +52,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
         }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView bookidTv, titleTv, isbnTv, authorTv, descriptionTv, priceTv, positionTv;
+        public TextView bookidTv, titleTv, isbnTv, authorTv, descriptionTv, priceTv;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -58,7 +62,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
             authorTv = itemView.findViewById(R.id.author_id);
             descriptionTv = itemView.findViewById(R.id.description_id);
             priceTv = itemView.findViewById(R.id.price_id);
-            positionTv = itemView.findViewById(R.id.position_id);
+
         }
     }
 }
