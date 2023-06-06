@@ -42,7 +42,5 @@ public class BookViewModel extends AndroidViewModel {
         return mRepository.getBookCount();
     }
 
-    public void deleteUnknownAuthorBooks() {
-        mRepository.deleteUnknownAuthorBooks();
-    }
+
 }

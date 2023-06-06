@@ -42,9 +42,4 @@ public class BookRepository {
         return mBookDao.getBookCount();
     }
 
-    void deleteUnknownAuthorBooks() {
-        BookDatabase.databaseWriteExecutor.execute(()->{
-            mBookDao.deleteUnknownAuthorBooks();
-        });
-    }
 }

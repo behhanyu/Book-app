@@ -34,7 +34,4 @@ public interface BookDao {
 
     @Query("SELECT COUNT(*) FROM book")
     LiveData<Integer> getBookCount();
-
-    @Query("DELETE FROM book WHERE author = 'unknown'")
-    void deleteUnknownAuthorBooks();
 }

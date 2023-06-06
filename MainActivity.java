@@ -22,14 +22,18 @@ import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.fit2081.smstokenizer_w5.provider.Book;
 import com.fit2081.smstokenizer_w5.provider.BookDao;
 import com.fit2081.smstokenizer_w5.provider.BookViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.StringTokenizer;
 
@@ -42,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     Toolbar toolbar;
     private BookViewModel mBookViewModel;
-    BookDao mBookDao;
+    DatabaseReference myRef;
 
 
     @Override
@@ -57,6 +61,12 @@ public class MainActivity extends AppCompatActivity {
         etAuthor = findViewById(R.id.etAuthor);
         etDescription = findViewById(R.id.etDescription);
         etPrice = findViewById(R.id.etPrice);
+
+        // Week 8
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("book");
+
 
         // Week 6
         drawerlayout = findViewById(R.id.drawer_layout);
@@ -126,9 +136,27 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.remove_last_book) {
                 // remove the last item from recycler view
                 mBookViewModel.deleteLast();
+                // Use a query to retrieve the last book added to the database
+                Query lastBookQuery = myRef.orderByChild("timestamp").limitToLast(1);
+                lastBookQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        // Get the key of the last book
+                        String lastBookKey = dataSnapshot.getChildren().iterator().next().getKey();
+
+                        // Delete the last book from the database
+                        myRef.child(lastBookKey).removeValue();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        // Handle the error
+                    }
+                });
             } else if (id == R.id.remove_all_books) {
                 // remove all items from recycler view
                 mBookViewModel.deleteAll();
+                myRef.removeValue();
             } else if (id == R.id.list_all) {
                 Intent intent = new Intent(MainActivity.this, MainActivity2.class);
                 startActivity(intent);
@@ -136,9 +164,6 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.close) {
                 // use the finish method to close the activity
                 finish();
-            } else if (id == R.id.delete_unknown_author) {
-                // use the finish method to close the activity
-                mBookViewModel.deleteUnknownAuthorBooks();
             }
             // close the drawer
             drawerlayout.closeDrawers();
@@ -179,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
                     etISBN.setText(book.getIsbn());
                     etAuthor.setText(book.getAuthor());
                     etDescription.setText(book.getDescription());
-                    etPrice.setText(book.getPrice());
+                    etPrice.setText(String.format("%.2f", book.getPrice()));
                 }
             }
         });
@@ -193,10 +218,11 @@ public class MainActivity extends AppCompatActivity {
         Toast myMessage = Toast.makeText(this, String.format("Book (%s) and the price (%s)", bookTitle, bookPrice), Toast.LENGTH_SHORT);
         myMessage.show();
         // show the book in the recycler view
-        Book book = new Book(etTitle.getText().toString(), etISBN.getText().toString(), etAuthor.getText().toString(), etDescription.getText().toString(), etPrice.getText().toString());
+        Book book = new Book(etTitle.getText().toString(), etISBN.getText().toString(), etAuthor.getText().toString(), etDescription.getText().toString(), Double.valueOf(etPrice.getText().toString()));
 
 //        data.add(book);
         mBookViewModel.insert(book);
+        myRef.push().setValue(book);
     }
 
     public void clearText() {
@@ -232,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
         etBookID.setText("");
         etAuthor.setText("");
         etDescription.setText("");
-        etPrice.setText("");
+        etPrice.setText(0);
     }
 
     class MyBroadCastReceiver extends BroadcastReceiver {
