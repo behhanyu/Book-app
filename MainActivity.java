@@ -1,9 +1,12 @@
 package com.example.w2lab;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.annotation.SuppressLint;
+import androidx.core.app.ActivityCompat;
+import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -11,9 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import java.util.Locale;
-
+import java.util.StringTokenizer;
 public class MainActivity extends AppCompatActivity {
     private EditText etBookID,etTitle,etISBN,etAuthor,etDescription,etPrice;
 
@@ -41,21 +42,76 @@ public class MainActivity extends AppCompatActivity {
         };
 
         etPrice.setFilters(new InputFilter[]{filter});
-    }
-    public void DoublePrice(View v){
-        EditText doubledPrice = findViewById(R.id.etPrice);
-        String currentValue = doubledPrice.getText().toString();
-        if (currentValue.isEmpty()) {return;}
-        double doubledValue = Double.parseDouble(currentValue) * 2;
-        doubledPrice.setText(String.format(Locale.US, "%.2f", doubledValue));
+
+        /* Request permissions to access SMS */
+        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.SEND_SMS, android.Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS}, 0);
+        /* Create and instantiate the local broadcast receiver
+           This class listens to messages come from class SMSReceiver
+         */
+        MyBroadCastReceiver myBroadCastReceiver = new MyBroadCastReceiver();
+
+        /*
+         * Register the broadcast handler with the intent filter that is declared in
+         * class SMSReceiver @line 11
+         * */
+        registerReceiver(myBroadCastReceiver, new IntentFilter(SMSReceiver.SMS_FILTER));
+
     }
 
-    public void setISBN(View v){
-        SharedPreferences prefs = getSharedPreferences("MyPrefs", 0);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("isbn", "00112233");
-        editor.apply();
+    class MyBroadCastReceiver extends BroadcastReceiver {
+        /*
+         * This method 'onReceive' will get executed every time class SMSReceive sends a broadcast
+         * */
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            /*
+             * Retrieve the message from the intent
+             * */
+            String msg = intent.getStringExtra(SMSReceiver.SMS_MSG_KEY);
+            Toast.makeText(context, intent.getStringExtra(SMSReceiver.SMS_MSG_KEY), Toast.LENGTH_SHORT).show();
+            /*
+             * String Tokenizer is used to parse the incoming message
+             * The protocol is to have the account holder name and account number separate by a semicolon
+             * */
+
+            StringTokenizer sT = new StringTokenizer(msg, "|");
+            String inputBookID = sT.nextToken();
+            String inputTitle = sT.nextToken();
+            String inputISBN = sT.nextToken();
+            String inputAuthor = sT.nextToken();
+            String inputDescription = sT.nextToken();
+            double inputPrice = Double.parseDouble(sT.nextToken());
+            boolean additionalValue = Boolean.parseBoolean(sT.nextToken());
+
+            // update the price based on the boolean value
+            if (additionalValue) {
+                inputPrice += 100;
+            } else {
+                inputPrice += 5;
+            }
+
+            //update the UI
+            etBookID.setText(inputBookID);
+            etTitle.setText(inputTitle);
+            etISBN.setText(inputISBN);
+            etAuthor.setText(inputAuthor);
+            etDescription.setText(inputDescription);
+            etPrice.setText(String.format("%.2f", inputPrice));
+        }
     }
+//    public void DoublePrice(View v){
+//        EditText doubledPrice = findViewById(R.id.etPrice);
+//        String currentValue = doubledPrice.getText().toString();
+//        if (currentValue.isEmpty()) {return;}
+//        double doubledValue = Double.parseDouble(currentValue) * 2;
+//        doubledPrice.setText(String.format(Locale.US, "%.2f", doubledValue));
+//    }
+//    public void setISBN(View v){
+//        SharedPreferences prefs = getSharedPreferences("MyPrefs", 0);
+//        SharedPreferences.Editor editor = prefs.edit();
+//        editor.putString("isbn", "00112233");
+//        editor.apply();
+//    }
     public void saveData(){
         SharedPreferences prefs = getSharedPreferences("MyPrefs", 0);
 
@@ -112,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putString("title", etTitle.getText().toString());
         outState.putString("isbn", etISBN.getText().toString());
     }
