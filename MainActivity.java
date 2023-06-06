@@ -1,7 +1,12 @@
-package com.example.w2lab;
+package com.fit2081.smstokenizer_w5;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,17 +16,38 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.StringTokenizer;
+
 public class MainActivity extends AppCompatActivity {
+
     private EditText etBookID,etTitle,etISBN,etAuthor,etDescription,etPrice;
+
+    //     Week 5
+    private DrawerLayout drawerlayout;
+    private NavigationView navigationView;
+    Toolbar toolbar;
+    ArrayList<String> listItems = new ArrayList<String>();
+    ArrayAdapter<String> adapter;
+    private ListView myListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.drawer_activity_main);
         Log.i("lab3", "onCreate");
 
         etBookID = findViewById(R.id.etBookID);
@@ -56,6 +82,34 @@ public class MainActivity extends AppCompatActivity {
          * */
         registerReceiver(myBroadCastReceiver, new IntentFilter(SMSReceiver.SMS_FILTER));
 
+        //Week 5
+
+        myListView =  findViewById(R.id.listView);
+
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
+        myListView.setAdapter(adapter);
+
+        drawerlayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        toolbar = findViewById(R.id.toolbar);
+
+        setSupportActionBar(toolbar);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerlayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerlayout.addDrawerListener(toggle);
+        toggle.syncState();
+        navigationView.setNavigationItemSelectedListener(new MyNavigationListener());
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addBook();
+            }
+        });
+
     }
 
     class MyBroadCastReceiver extends BroadcastReceiver {
@@ -81,14 +135,7 @@ public class MainActivity extends AppCompatActivity {
             String inputAuthor = sT.nextToken();
             String inputDescription = sT.nextToken();
             double inputPrice = Double.parseDouble(sT.nextToken());
-            boolean additionalValue = Boolean.parseBoolean(sT.nextToken());
 
-            // update the price based on the boolean value
-            if (additionalValue) {
-                inputPrice += 100;
-            } else {
-                inputPrice += 5;
-            }
 
             //update the UI
             etBookID.setText(inputBookID);
@@ -99,19 +146,54 @@ public class MainActivity extends AppCompatActivity {
             etPrice.setText(String.format("%.2f", inputPrice));
         }
     }
-//    public void DoublePrice(View v){
-//        EditText doubledPrice = findViewById(R.id.etPrice);
-//        String currentValue = doubledPrice.getText().toString();
-//        if (currentValue.isEmpty()) {return;}
-//        double doubledValue = Double.parseDouble(currentValue) * 2;
-//        doubledPrice.setText(String.format(Locale.US, "%.2f", doubledValue));
-//    }
-//    public void setISBN(View v){
-//        SharedPreferences prefs = getSharedPreferences("MyPrefs", 0);
-//        SharedPreferences.Editor editor = prefs.edit();
-//        editor.putString("isbn", "00112233");
-//        editor.apply();
-//    }
+
+    class MyNavigationListener implements NavigationView.OnNavigationItemSelectedListener {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            // get the id of the selected item
+            int id = item.getItemId();
+            if (id == R.id.add_book) {
+                // Do something
+                addBook();
+            } else if (id == R.id.remove_last_book) {
+                // Do something
+                listItems.remove(listItems.size() -1);
+                adapter.notifyDataSetChanged();
+            } else if (id == R.id.remove_all_books) {
+                // Do something
+                listItems.clear();
+                adapter.notifyDataSetChanged();
+            } else if (id == R.id.close) {
+                // use the finish method to close the activity
+                finish();
+            }
+            // close the drawer
+            drawerlayout.closeDrawers();
+            // tell the OS
+            return true;
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.option_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.clear_fields) {
+            clearText();
+        } else if (id == R.id.load_data) {
+            loadData();
+        } else if(id == R.id.total_books) {
+            Toast.makeText(this, "Total Books: " + listItems.size(), Toast.LENGTH_SHORT).show();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public void saveData(){
         SharedPreferences prefs = getSharedPreferences("MyPrefs", 0);
 
@@ -134,20 +216,19 @@ public class MainActivity extends AppCompatActivity {
         etDescription.setText(prefs.getString("description", ""));
         etPrice.setText(prefs.getString("price", ""));
     }
-    public void loadBook(View v) {
-        loadData();
-    }
 
-    public void addBook(View v){
+    public void addBook(){
         saveData();
 
         String bookTitle = etTitle.getText().toString();
         String bookPrice = etPrice.getText().toString();
         Toast myMessage = Toast.makeText(this, String.format("Book (%s) and the price (%s)", bookTitle, bookPrice), Toast.LENGTH_SHORT);
         myMessage.show();
+        listItems.add(bookTitle + " | " + bookPrice);
+        adapter.notifyDataSetChanged();
     }
 
-    public void clearText(View v) {
+    public void clearText() {
         etBookID.getText().clear();
         etTitle.getText().clear();
         etISBN.getText().clear();

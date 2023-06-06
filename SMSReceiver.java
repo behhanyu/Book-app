@@ -1,4 +1,4 @@
-package com.example.w2lab;
+package com.fit2081.smstokenizer_w5;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
