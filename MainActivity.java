@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -29,7 +31,6 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.StringTokenizer;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,9 +41,11 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerlayout;
     private NavigationView navigationView;
     Toolbar toolbar;
-    ArrayList<String> listItems = new ArrayList<String>();
-    ArrayAdapter<String> adapter;
-    private ListView myListView;
+    RecyclerView recyclerView;
+    //     Week 6
+    RecyclerView.LayoutManager layoutManager;
+    MyRecyclerAdapter adapter;
+    ArrayList<Book> data = new ArrayList<>();  //The data source
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,12 +85,16 @@ public class MainActivity extends AppCompatActivity {
          * */
         registerReceiver(myBroadCastReceiver, new IntentFilter(SMSReceiver.SMS_FILTER));
 
-        //Week 5
+        //      Week 6
 
-        myListView =  findViewById(R.id.listView);
+        recyclerView = findViewById(R.id.rv);
+        //The Recycler View needs a layout manager
+        layoutManager = new LinearLayoutManager(this);  //A RecyclerView.LayoutManager implementation which provides similar functionality to ListView.
+        recyclerView.setLayoutManager(layoutManager);   // Also StaggeredGridLayoutManager and GridLayoutManager or a custom Layout manager
 
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listItems);
-        myListView.setAdapter(adapter);
+        adapter = new MyRecyclerAdapter();
+        adapter.setData(data);
+        recyclerView.setAdapter(adapter);
 
         drawerlayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -112,41 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    class MyBroadCastReceiver extends BroadcastReceiver {
-        /*
-         * This method 'onReceive' will get executed every time class SMSReceive sends a broadcast
-         * */
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            /*
-             * Retrieve the message from the intent
-             * */
-            String msg = intent.getStringExtra(SMSReceiver.SMS_MSG_KEY);
-            Toast.makeText(context, intent.getStringExtra(SMSReceiver.SMS_MSG_KEY), Toast.LENGTH_SHORT).show();
-            /*
-             * String Tokenizer is used to parse the incoming message
-             * The protocol is to have the account holder name and account number separate by a semicolon
-             * */
-
-            StringTokenizer sT = new StringTokenizer(msg, "|");
-            String inputBookID = sT.nextToken();
-            String inputTitle = sT.nextToken();
-            String inputISBN = sT.nextToken();
-            String inputAuthor = sT.nextToken();
-            String inputDescription = sT.nextToken();
-            double inputPrice = Double.parseDouble(sT.nextToken());
-
-
-            //update the UI
-            etBookID.setText(inputBookID);
-            etTitle.setText(inputTitle);
-            etISBN.setText(inputISBN);
-            etAuthor.setText(inputAuthor);
-            etDescription.setText(inputDescription);
-            etPrice.setText(String.format("%.2f", inputPrice));
-        }
-    }
-
     class MyNavigationListener implements NavigationView.OnNavigationItemSelectedListener {
 
         @Override
@@ -157,13 +129,17 @@ public class MainActivity extends AppCompatActivity {
                 // Do something
                 addBook();
             } else if (id == R.id.remove_last_book) {
-                // Do something
-                listItems.remove(listItems.size() -1);
-                adapter.notifyDataSetChanged();
+                // remove the last item from recycler view
+                if (data.size() > 0) {
+                    data.remove(data.size() - 1);
+                    adapter.notifyItemRemoved(data.size());
+                }
             } else if (id == R.id.remove_all_books) {
-                // Do something
-                listItems.clear();
-                adapter.notifyDataSetChanged();
+                // remove all items from recycler view
+                if (data.size() > 0) {
+                    data.clear();
+                    adapter.notifyDataSetChanged();
+                }
             } else if (id == R.id.close) {
                 // use the finish method to close the activity
                 finish();
@@ -189,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.load_data) {
             loadData();
         } else if(id == R.id.total_books) {
-            Toast.makeText(this, "Total Books: " + listItems.size(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Total Books: " + data.size() , Toast.LENGTH_SHORT).show();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -224,7 +200,11 @@ public class MainActivity extends AppCompatActivity {
         String bookPrice = etPrice.getText().toString();
         Toast myMessage = Toast.makeText(this, String.format("Book (%s) and the price (%s)", bookTitle, bookPrice), Toast.LENGTH_SHORT);
         myMessage.show();
-        listItems.add(bookTitle + " | " + bookPrice);
+        // show the book in the recycler view
+        Book book = new Book(etBookID.getText().toString(), etTitle.getText().toString(), etISBN.getText().toString(), etAuthor.getText().toString(), etDescription.getText().toString(), etPrice.getText().toString());
+
+        data.add(book);
+
         adapter.notifyDataSetChanged();
     }
 
@@ -262,5 +242,40 @@ public class MainActivity extends AppCompatActivity {
         etAuthor.setText("");
         etDescription.setText("");
         etPrice.setText("");
+    }
+
+    class MyBroadCastReceiver extends BroadcastReceiver {
+        /*
+         * This method 'onReceive' will get executed every time class SMSReceive sends a broadcast
+         * */
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            /*
+             * Retrieve the message from the intent
+             * */
+            String msg = intent.getStringExtra(SMSReceiver.SMS_MSG_KEY);
+            Toast.makeText(context, intent.getStringExtra(SMSReceiver.SMS_MSG_KEY), Toast.LENGTH_SHORT).show();
+            /*
+             * String Tokenizer is used to parse the incoming message
+             * The protocol is to have the account holder name and account number separate by a semicolon
+             * */
+
+            StringTokenizer sT = new StringTokenizer(msg, "|");
+            String inputBookID = sT.nextToken();
+            String inputTitle = sT.nextToken();
+            String inputISBN = sT.nextToken();
+            String inputAuthor = sT.nextToken();
+            String inputDescription = sT.nextToken();
+            double inputPrice = Double.parseDouble(sT.nextToken());
+
+
+            //update the UI
+            etBookID.setText(inputBookID);
+            etTitle.setText(inputTitle);
+            etISBN.setText(inputISBN);
+            etAuthor.setText(inputAuthor);
+            etDescription.setText(inputDescription);
+            etPrice.setText(String.format("%.2f", inputPrice));
+        }
     }
 }
