@@ -10,6 +10,7 @@ import android.text.InputFilter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -47,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     private BookViewModel mBookViewModel;
     DatabaseReference myRef;
+    View myFrame;
+    int x_down;
+    int y_down;
 
 
     @Override
@@ -61,6 +65,58 @@ public class MainActivity extends AppCompatActivity {
         etAuthor = findViewById(R.id.etAuthor);
         etDescription = findViewById(R.id.etDescription);
         etPrice = findViewById(R.id.etPrice);
+
+        // Week 10
+        myFrame = findViewById(R.id.touch_frame_id);
+        myFrame.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent motionEvent) {
+                int action = motionEvent.getActionMasked();
+                switch(action) {
+                    case MotionEvent.ACTION_DOWN:
+                        x_down = (int) motionEvent.getX();
+                        y_down = (int) motionEvent.getY();
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        if (x_down <= 300 && y_down <= 300){
+                            etAuthor.setText(etAuthor.getText().toString().toUpperCase());
+
+                        }
+                        if (Math.abs(y_down - motionEvent.getY()) < 60) {
+                            if (x_down - motionEvent.getX() > 0) { // right to left
+                                addBook();
+                                return true;
+                            }
+                        } else if (Math.abs(x_down - motionEvent.getX()) < 60) {
+                            if (y_down - motionEvent.getY() > 0) { // bottom to top
+                                clearText();
+                                return true;
+                            }
+
+                            if (y_down - motionEvent.getY() < 0) { // top to bottom
+                                finish();
+                                return true;
+                            }
+                        }
+                    case MotionEvent.ACTION_MOVE:
+//                        etAuthor.setText(etAuthor.getText().toString().toUpperCase());
+                        if (Math.abs(y_down - motionEvent.getY()) < 60) {
+                            if (x_down - motionEvent.getX() < 0) { // left to right
+                                Double currentPrice = Double.parseDouble(etPrice.getText().toString());
+                                currentPrice += 1;
+                                etPrice.setText(String.valueOf(currentPrice));
+                                return true;
+                            }
+                        }
+                    default:
+                        return false;
+                }
+            }
+
+
+        });
+
 
         // Week 8
 
