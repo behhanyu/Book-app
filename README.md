@@ -40,3 +40,18 @@ Week 7
 Week 8
 - Create a content resolver class which connects to the CardView in main activity
 - Create a content provider class which connects to Firebase, allowing the main activity to add or remove items via the content provider to the database
+
+Week 9
+- Get values wanted from JSON
+- Get image from url
+- Go to another webpage (through webViewClient)
+
+Week 10
+- 
+- 
+- 
+
+Week 11
+- 
+- 
+- 
