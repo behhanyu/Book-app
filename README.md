@@ -47,11 +47,8 @@ Week 9
 - Go to another webpage (through webViewClient)
 
 Week 10
-- 
-- 
-- 
+- onTouchListener (swipe up, down, left, right)
 
 Week 11
-- 
-- 
-- 
+- Gesture Detector
+- Scale Detector
