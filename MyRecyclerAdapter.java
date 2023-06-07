@@ -39,7 +39,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
         holder.titleTv.setText(data.get(position).getTitle());
         holder.isbnTv.setText("ISBN: " + data.get(position).getIsbn());
         holder.authorTv.setText(data.get(position).getAuthor());
-        holder.descriptionTv.setText("Description: " + data.get(position).getDescription());
+        holder.descriptionTv.setText("("+data.get(position).getDescription()+")");
         holder.priceTv.setText("RM" + data.get(position).getPrice());
 
         Log.d("week6App","onBindViewHolder");

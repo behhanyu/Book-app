@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -25,7 +26,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.fit2081.smstokenizer_w5.provider.Book;
-import com.fit2081.smstokenizer_w5.provider.BookDao;
 import com.fit2081.smstokenizer_w5.provider.BookViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText etBookID,etTitle,etISBN,etAuthor,etDescription,etPrice;
 
     //     Week 5
+    View constraint_layout;
     private DrawerLayout drawerlayout;
     private NavigationView navigationView;
     Toolbar toolbar;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     View myFrame;
     int x_down;
     int y_down;
-
+    GestureDetector gestureDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,56 +67,60 @@ public class MainActivity extends AppCompatActivity {
         etDescription = findViewById(R.id.etDescription);
         etPrice = findViewById(R.id.etPrice);
 
-        // Week 10
-        myFrame = findViewById(R.id.touch_frame_id);
-        myFrame.setOnTouchListener(new View.OnTouchListener() {
+        // Week 11
+        gestureDetector = new GestureDetector(this, new MyGestureDetector());
+
+        constraint_layout = findViewById(R.id.constraint_id);
+        constraint_layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent motionEvent) {
-                int action = motionEvent.getActionMasked();
-                switch(action) {
-                    case MotionEvent.ACTION_DOWN:
-                        x_down = (int) motionEvent.getX();
-                        y_down = (int) motionEvent.getY();
-                        return true;
+            public boolean onTouch(View v, MotionEvent event) {
 
-                    case MotionEvent.ACTION_UP:
-                        if (x_down <= 300 && y_down <= 300){
-                            etAuthor.setText(etAuthor.getText().toString().toUpperCase());
-
-                        }
-                        if (Math.abs(y_down - motionEvent.getY()) < 60) {
-                            if (x_down - motionEvent.getX() > 0) { // right to left
-                                addBook();
-                                return true;
-                            }
-                        } else if (Math.abs(x_down - motionEvent.getX()) < 60) {
-                            if (y_down - motionEvent.getY() > 0) { // bottom to top
-                                clearText();
-                                return true;
-                            }
-
-                            if (y_down - motionEvent.getY() < 0) { // top to bottom
-                                finish();
-                                return true;
-                            }
-                        }
-                    case MotionEvent.ACTION_MOVE:
-//                        etAuthor.setText(etAuthor.getText().toString().toUpperCase());
-                        if (Math.abs(y_down - motionEvent.getY()) < 60) {
-                            if (x_down - motionEvent.getX() < 0) { // left to right
-                                Double currentPrice = Double.parseDouble(etPrice.getText().toString());
-                                currentPrice += 1;
-                                etPrice.setText(String.valueOf(currentPrice));
-                                return true;
-                            }
-                        }
-                    default:
-                        return false;
-                }
+                gestureDetector.onTouchEvent(event);
+                return true;
             }
-
-
         });
+
+        // Week 10
+//        myFrame = findViewById(R.id.touch_frame_id);
+//        myFrame.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent motionEvent) {
+//                int action = motionEvent.getActionMasked();
+//                switch(action) {
+//                    case MotionEvent.ACTION_DOWN:
+//                        x_down = (int) motionEvent.getX();
+//                        y_down = (int) motionEvent.getY();
+//                        return true;
+//
+//                    case MotionEvent.ACTION_UP:
+//                        if (Math.abs(y_down - motionEvent.getY()) < 60) {
+//                            if (x_down - motionEvent.getX() > 0) { // right to left
+//                                addBook();
+//                                return true;
+//                            }
+//                        } else if (Math.abs(x_down - motionEvent.getX()) < 60) {
+//                            if (y_down - motionEvent.getY() > 0) { // bottom to top
+//                                clearText();
+//                                return true;
+//                            }
+//                        }
+//                    case MotionEvent.ACTION_MOVE:
+////                        etAuthor.setText(etAuthor.getText().toString().toUpperCase());
+//                        if (Math.abs(y_down - motionEvent.getY()) < 60) {
+//                            if (x_down - motionEvent.getX() < 0) { // left to right
+//                                Double currentPrice = Double.parseDouble(etPrice.getText().toString());
+//                                currentPrice += 1;
+//                                etPrice.setText(String.valueOf(currentPrice));
+//                                return true;
+//                            }
+//                        }
+//                    default:
+//                        return false;
+//                }
+//            }
+//
+//
+//        });
 
 
         // Week 8
@@ -179,6 +184,55 @@ public class MainActivity extends AppCompatActivity {
 
         etPrice.setFilters(new InputFilter[]{filter});
     }
+
+    // Week 11
+    class MyGestureDetector extends GestureDetector.SimpleOnGestureListener{
+        @Override
+        public boolean onDoubleTap(@NonNull MotionEvent e) {
+            clearText();
+            return super.onDoubleTap(e);
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
+            String newISBN = RandomString.generateNewRandomString(8);
+            etISBN.setText(newISBN);
+            return super.onSingleTapConfirmed(e);
+        }
+
+        @Override
+        public boolean onFling(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
+            if (velocityX > 1000 || velocityY > 1000) {
+                moveTaskToBack(true);
+            }
+            return super.onFling(e1, e2, velocityX, velocityY);
+        }
+
+        @Override
+        public void onLongPress(@NonNull MotionEvent e) {
+            loadData();
+            super.onLongPress(e);
+        }
+
+        @Override
+        public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
+            if (Math.abs(distanceX) > Math.abs(distanceY)) { // check if scrolling horizontally
+                Double currentPrice = Double.parseDouble(etPrice.getText().toString());
+                if (distanceX < 0) { // scrolling left to right (previous e2 - current e2)
+                    currentPrice -= (int)distanceX;
+                    etPrice.setText(String.valueOf(currentPrice));
+                } else { // scrolling right to left
+                    currentPrice += (int)distanceY;
+                    etPrice.setText(String.valueOf(currentPrice));
+                }
+            }
+            if (Math.abs(distanceX) < Math.abs(distanceY)) {
+                etTitle.setText("untitled");
+            }
+            return super.onScroll(e1, e2, distanceX, distanceY);
+        }
+    }
+
 
     class MyNavigationListener implements NavigationView.OnNavigationItemSelectedListener {
 

@@ -3,6 +3,7 @@ package com.fit2081.smstokenizer_w5.provider;
 import android.app.Application;
 
 import androidx.lifecycle.LiveData;
+import androidx.sqlite.db.SimpleSQLiteQuery;
 
 import java.util.List;
 
@@ -40,6 +41,10 @@ public class BookRepository {
 
     LiveData<Integer> getBookCount() {
         return mBookDao.getBookCount();
+    }
+    public LiveData<List<Book>> getBooksByFilters(SimpleSQLiteQuery filterQuery) {
+        return mBookDao.getBooksByFilters(filterQuery);
+
     }
 
 }

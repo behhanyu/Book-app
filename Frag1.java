@@ -12,7 +12,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fit2081.smstokenizer_w5.provider.Book;
 import com.fit2081.smstokenizer_w5.provider.BookViewModel;
+
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -87,4 +90,14 @@ public class Frag1 extends Fragment {
             adapter.notifyDataSetChanged();
         });
     }
+
+    public void applyFilter(String authorValue, String titleValue, String priceValue){
+        mBookViewModel.getFilteredBooks(authorValue, titleValue, priceValue).observe(getViewLifecycleOwner(), newData -> { // .observe method is used to observe changes in the filtered book data
+
+            // the adapter ensures that the UI is updated with the filtered books
+            adapter.setData(newData);
+            adapter.notifyDataSetChanged();
+        });
+    }
+
 }

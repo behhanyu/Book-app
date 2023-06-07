@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.RawQuery;
+import androidx.sqlite.db.SimpleSQLiteQuery;
 
 import java.util.List;
 @Dao
@@ -34,4 +36,7 @@ public interface BookDao {
 
     @Query("SELECT COUNT(*) FROM book")
     LiveData<Integer> getBookCount();
+
+    @RawQuery(observedEntities = Book.class) //specifies that the raw query is expected to observe changes in the Book entity
+    LiveData<List<Book>> getBooksByFilters(SimpleSQLiteQuery filterQuery);
 }
