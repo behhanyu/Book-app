@@ -52,3 +52,6 @@ Week 10
 Week 11
 - Gesture Detector
 - Scale Detector
+
+Week 12
+- Nothing new, just theory-based content
