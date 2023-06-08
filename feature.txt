@@ -1,0 +1,24 @@
+The new feature is a filter function in the "List All" option of the navigation menu. It takes the user to Activity 2, which displays a list of all the added books.
+
+In activity_main2.xml, there are three EditText fields for author, title, and price filters, along with "Filter" and "Clear" buttons.
+
+The "Filter" button applies the specified filters and displays the filtered books in the designated frame.
+The "Clear" button removes the filters and shows all books.
+During filtering, empty filter fields are ignored.
+
+Here's how the filter function works:
+
+1. User input values are passed to the applyFilter() function in the Frag1 class.
+2. applyFilter() calls mBookViewModel to observe changes in book data.
+3. The BookViewModel calls getBooksByFilters() on the BookRepository, passing the filtering criteria.
+4. The BookRepository uses the BookDao interface to execute the filter query.
+5. The filtered book data is retrieved using a raw SQL query executed by BookDao.
+6. Filtered book data is returned as a LiveData object for observation and updates.
+7. The BookRepository sends the filtered data to the BookViewModel.
+8. The BookViewModel updates its internal LiveData with the filtered book data.
+9. The observed LiveData in the activity receives the updated filtered book data.
+10. The UI reflects the filtered book data based on the user's criteria.
+
+When the "clear" button is clicked, it use empty string to represent author, title and price and pass it as parameter into the applyFilter() function, so all books will be shown because the empty filter values do not impose any restrictions on the book list.
+
+The user can use this function by navigating to the "List All" option in navigation menu and type the filter edittext field, and click the button to filter or clear filter.

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "730168402332",
+    "firebase_url": "https://book-app-project-55816-default-rtdb.firebaseio.com",
+    "project_id": "book-app-project-55816",
+    "storage_bucket": "book-app-project-55816.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730168402332:android:72e910c730951500b02859",
+        "android_client_info": {
+          "package_name": "com.fit2081.smstokenizer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "730168402332-lij1qm0kp1ut5vk4otma18dker0928ku.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8S_SnRpYSPOjjK9_n3PUPj0ag9Ugk_8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "730168402332-lij1qm0kp1ut5vk4otma18dker0928ku.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
