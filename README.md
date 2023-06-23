@@ -1,5 +1,5 @@
-# FIT2081---book-app
-2023 Sem 1
+# Book-app
+FIT2081 - 2023 Sem 1
 
 Week 2
 - Change word when in landscape
